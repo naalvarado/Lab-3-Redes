@@ -1,6 +1,6 @@
 import datetime, logging, socket, sys, threading, os, hashlib, time
 
-HOST = '192.168.47.129'
+HOST = '192.168.20.48'
 PORT = 444
 FORMAT = 'utf-8'
 
@@ -74,8 +74,8 @@ def clientthread(conn, fName):
 conn, addr = s.accept()
 print ('Connected with ' + addr[0] + ':' + str(addr[1]))
 fileName = conn.recv(1024).decode(FORMAT)
-nClients = conn.recv(1024)
-conn.close()
+nClients = int.from_bytes(conn.recv(1024), "big")
+#conn.close()
 
 now = datetime.datetime.now()
 
