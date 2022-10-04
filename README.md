@@ -16,3 +16,5 @@ Los Logs de este repositorio corresponden a los generados por el Cliente en cada
 -	Capturas de tráfico: https://mega.nz/folder/YFA33QJC#l-384CtDG8hV-fH7Dhtdfw 
 
 -	Archivos server: https://mega.nz/folder/ZR5AiIjR#G1XG6PQnewpwsum1FvzM1Q 
+
+- Video: https://youtu.be/mUVjLdx7Dew
