@@ -2,11 +2,22 @@ import socket
 import sys
 import concurrent.futures
 import logging
+import datetime
+import os
 
 s = socket.socket()
 HOST = "192.168.20.48"
 PORT = 444
 FORMAT = 'utf-8'
+
+logs = os.path.exists("./Logs")
+if not logs:
+    os.makedirs("./Logs")
+
+format = "%(asctime)s: %(message)s"
+now = datetime.datetime.now()
+logfile = "./Logs/" + str(now.year) + "-" + str(now.month) + "-" + str(now.day) + "-" + str(now.minute) + "-" + str(now.second) + ".log"
+logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S", filename=logfile)
 
 def conn(tid):
     print("Comiensa hilo: " + str(tid))
@@ -23,17 +34,32 @@ if __name__ == "__main__":
     except socket.error as msg:
         print(msg)
     print("ceneccion establecida")
+    logging.info("Coneccion establecida con: " + str(HOST) + " en puerto: " + str(PORT))
 
-    message = bytes("file.txt", FORMAT)
+    print("Que archivo quiere descargar?")
+    print("1) 100Mb")
+    print("2) 250Mb")
+    fileCode = input()
+    fileName = ""
+    if fileCode == "1":
+        fileName = "100MB.txt"
+    elif fileCode == "2":
+        fileName = "250MB.txt"
+    else:
+        print("input no valido")
+        exit(1)
+    message = bytes(fileName, FORMAT)
     s.sendall(message)
-    message = bytes(3)
+    print("Numero de conecciones: ")
+    cons = int(input())
+    message = bytes(cons)
     s.sendall(message)
     print("mensage enviado")
 
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-        executor.map(conn, range(3))
+    logging.info("Creando " + str(cons) + " clientes para descargar el archivo " + str(fileName))
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=cons) as executor:
+        executor.map(conn, range(cons))
 
 #s.listen(5) 
 #while True:
