@@ -5,6 +5,7 @@ import logging
 import datetime
 import os
 import tqdm
+import hashlib
 
 s = socket.socket()
 HOST = "192.168.20.48"
@@ -18,7 +19,7 @@ if not logs:
 
 format = "%(asctime)s: %(message)s"
 now = datetime.datetime.now()
-logfile = "./Logs/" + str(now.year) + "-" + str(now.month) + "-" + str(now.day) + "-" + str(now.minute) + "-" + str(now.second) + ".log"
+logfile = "./Logs/" + str(now.year) + "-" + str(now.month) + "-" + str(now.day) + "-" + str(now.hour) + "-" + str(now.minute) + "-" + str(now.second) + ".log"
 logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S", filename=logfile)
 
 filesize = 0
@@ -37,16 +38,17 @@ def getHashDigest(file):
     return (file_hash.hexdigest()) # Get the hexadecimal digest of the hash
 
 def conn(tid):
+    print("Comiensa hilo: " + str(tid))
     client_socket = socket.socket()
     try:
-        s.connect((HOST,PORT))
+        client_socket.connect((HOST,PORT))
     except socket.error as msg:
         print(msg)
         exit(1)
-    print("Comiensa hilo: " + str(tid))
+    logging.info("Coneccion establecida con: " + str(HOST) + " en puerto: " + str(PORT) + " cliente " + str(tid))
     client_socket.sendall(bytes(tid))
     print("ID enviado")
-    progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+    progress = tqdm.tqdm(range(filesize), f"Receiving {fileName}", unit="B", unit_scale=True, unit_divisor=1024)
     with open(fileName, "wb") as f:
         while True:
             bytes_read = client_socket.recv(BUFFER_SIZE)
@@ -89,16 +91,16 @@ if __name__ == "__main__":
     message = bytes(fileName, FORMAT)
     s.sendall(message)
     print("Numero de conecciones: ")
-    cons = int(input())
-    message = bytes(cons)
+    cons = input()
+    message = bytes(cons, FORMAT)
     s.sendall(message)
     print("mensage enviado")
 
     logging.info("Creando " + str(cons) + " clientes para descargar el archivo " + str(fileName))
 
     s.close()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=cons) as executor:
-        executor.map(conn, range(cons))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=int(cons)) as executor:
+        executor.map(conn, range(int(cons)))
 
 
 #s.listen(5) 
