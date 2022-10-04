@@ -84,7 +84,8 @@ def clientthread(conn, fName):
 conn, addr = s.accept()
 print ('Connected with ' + addr[0] + ':' + str(addr[1]))
 fileName = conn.recv(1024).decode(FORMAT)
-nClients = int.from_bytes(conn.recv(1024), "big")
+#nClients = int.from_bytes(conn.recv(1024), "big")
+nClients = int(conn.recv(1024).decode(FORMAT))
 #conn.close()
 
 format = "%(asctime)s: %(message)s"
@@ -95,7 +96,11 @@ logging.basicConfig(format=format, datefmt="%H:%M:%S", filename=logFileName, lev
 
 tList = []
 #now keep talking with the client
+print("antes del while")
+print(str(fileName))
+print(str(nClients))
 while nClients > 0:
+    print("dentro del while")
     #wait to accept a connection - blocking call
     conn, addr = s.accept()
     logging.info('Connected with ' + addr[0] + ':' + str(addr[1]))
