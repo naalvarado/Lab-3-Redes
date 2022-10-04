@@ -37,8 +37,14 @@ def getHashDigest(file):
     return (file_hash.hexdigest()) # Get the hexadecimal digest of the hash
 
 def conn(tid):
+    client_socket = socket.socket()
+    try:
+        s.connect((HOST,PORT))
+    except socket.error as msg:
+        print(msg)
+        exit(1)
     print("Comiensa hilo: " + str(tid))
-    s.sendall(bytes(tid))
+    client_socket.sendall(bytes(tid))
     print("ID enviado")
     progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
     with open(fileName, "wb") as f:
@@ -49,15 +55,15 @@ def conn(tid):
             f.write(bytes_read)
             progress.update(len(bytes_read))
 
-        s.sendall(bytes("ACK", FORMAT))
-        hashDesc = s.recv(BUFFER_SIZE).decode(FORMAT)
+        client_socket.sendall(bytes("ACK", FORMAT))
+        hashDesc = client_socket.recv(BUFFER_SIZE).decode(FORMAT)
         realHash = getHashDigest(f)
         if hashDesc == realHash:
             print("ok")
         else:
             print(":(")
 
-    s.close()
+    client_socket.close()
 
 if __name__ == "__main__":
     try:
@@ -90,8 +96,10 @@ if __name__ == "__main__":
 
     logging.info("Creando " + str(cons) + " clientes para descargar el archivo " + str(fileName))
 
+    s.close()
     with concurrent.futures.ThreadPoolExecutor(max_workers=cons) as executor:
         executor.map(conn, range(cons))
+
 
 #s.listen(5) 
 #while True:
