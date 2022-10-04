@@ -1,9 +1,14 @@
+from signal import signal, SIGPIPE, SIG_DFL
+#Ignore SIG_PIPE and don't throw exceptions on it... (http://docs.python.org/library/signal.html)  
+signal(SIGPIPE,SIG_DFL)   
+
 import datetime, logging, socket, sys, threading, os, hashlib, time, tqdm
 #"192.168.47.129"
 HOST = '192.168.47.129'
-PORT = 4444
+PORT = 5454
 FORMAT = 'utf-8'
 BUFFER_SIZE = 4096
+SEPARATOR = "<SEPARATOR>"
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print('Socket created')
@@ -35,18 +40,22 @@ def getHashDigest(file):
 
 #Function for handling connections. This will be used to create threads
 def clientthread(conn, fName):
-
+    print("before id")
     # Identificacion del cliente de la conexion
-    idClient = conn.recv(1024)
+    idClient = int(conn.recv(1024).decode(FORMAT))
+    print(idClient)
 
     # start sending the file
     fileSizeBytes = os.path.getsize(fName)
+    conn.send(f"{fName}{SEPARATOR}{fileSizeBytes}".encode())
     progress = tqdm.tqdm(range(fileSizeBytes), f"Sending {fName}", unit="B", unit_scale=True, unit_divisor=1024)
+    print ("antesopen")
     with open(fName, "rb") as f:
 
         # Calcular hash para el archivo
         hashValue = getHashDigest(f)
         #Envio de archivo
+        print("Empiza el envio")
         start = time.time()
         while True:
             # read the bytes from the file
@@ -56,7 +65,7 @@ def clientthread(conn, fName):
                 break
             # we use sendall to assure transimission in 
             # busy networks
-            s.sendall(bytes_read)
+            conn.sendall(bytes_read)
             # update the progress bar
             progress.update(len(bytes_read))
 
@@ -104,9 +113,11 @@ print("antes del while")
 print(str(fileName))
 print(str(nClients))
 while nClients > 0:
+    print(nClients)
     print("dentro del while")
     #wait to accept a connection - blocking call
     conn, addr = s.accept()
+    print('Connected with ' + addr[0] + ':' + str(addr[1]))
     logging.info('Connected with ' + addr[0] + ':' + str(addr[1]))
 
     #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
