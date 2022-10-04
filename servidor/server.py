@@ -5,7 +5,7 @@ signal(SIGPIPE,SIG_DFL)
 import datetime, logging, socket, sys, threading, os, hashlib, time, tqdm
 #"192.168.47.129"
 HOST = '192.168.47.129'
-PORT = 5454
+PORT = 5252
 FORMAT = 'utf-8'
 BUFFER_SIZE = 4096
 SEPARATOR = "<SEPARATOR>"
@@ -26,34 +26,33 @@ print ('Socket bind complete')
 s.listen(10)
 print ('Socket now listening')
 
-def getHashDigest(file):
-    BLOCK_SIZE = 65536 # The size of each read from the file
+def getHashDigest(fileName):
+    h = hashlib.sha1()
 
-    file_hash = hashlib.sha256() # Create the hash object, can use something other than `.sha256()` if you wish
+    with open(fileName, 'rb') as file:
+        chunk = 0
+        while chunk != b'':
+            chunk = file.read(1024)
+            h.update(chunk)
     
-    fb = file.read(BLOCK_SIZE) # Read from the file. Take in the amount declared above
-    while len(fb) > 0: # While there is still data being read from the file
-        file_hash.update(fb) # Update the hash
-        fb = file.read(BLOCK_SIZE) # Read the next block from the file
-
-    return (file_hash.hexdigest()) # Get the hexadecimal digest of the hash
+    return h.hexdigest()
 
 #Function for handling connections. This will be used to create threads
 def clientthread(conn, fName):
     print("before id")
     # Identificacion del cliente de la conexion
-    idClient = int(conn.recv(1024).decode(FORMAT))
+    idClient = str(conn.recv(1024).decode(FORMAT))
     print(idClient)
 
     # start sending the file
     fileSizeBytes = os.path.getsize(fName)
     conn.send(f"{fName}{SEPARATOR}{fileSizeBytes}".encode())
+    print(fName)
+    print(fileSizeBytes)
     progress = tqdm.tqdm(range(fileSizeBytes), f"Sending {fName}", unit="B", unit_scale=True, unit_divisor=1024)
     print ("antesopen")
     with open(fName, "rb") as f:
 
-        # Calcular hash para el archivo
-        hashValue = getHashDigest(f)
         #Envio de archivo
         print("Empiza el envio")
         start = time.time()
@@ -61,6 +60,7 @@ def clientthread(conn, fName):
             # read the bytes from the file
             bytes_read = f.read(BUFFER_SIZE)
             if not bytes_read:
+                conn.sendall(bytes("FIN", FORMAT))
                 # file transmitting is done
                 break
             # we use sendall to assure transimission in 
@@ -69,24 +69,32 @@ def clientthread(conn, fName):
             # update the progress bar
             progress.update(len(bytes_read))
 
-        logging.info('SENT {} WITH SIZE {}MB TO CLIENT #{}'.format(fName, fileSizeBytes/ (1024 * 1024), idClient))
+        logging.info('SENT {} WITH SIZE {}MB TO CLIENT #{}'.format(fName, str(fileSizeBytes/ (1024 * 1024)), idClient))
+        print("FINALIZA ENVIO")
 
-        exito = conn.recv(1024)
-        if not exito:
-            logging.error('FROM CLIENT #{}: File transfer failed')
-            conn.close()
+    print ("ESPERA ACK")
+    exito = str(conn.recv(1024).decode(FORMAT))
+    print("RECIBE ACK")
+    if exito != 'ACK':
+        logging.error('FROM CLIENT #{}: File transfer failed')
+        print("NO RECIBE ACK")
+        conn.close()
 
-        logging.info('FROM CLIENT #{}: {}'.format(idClient, exito))
-        
-        end = time.time()
+    logging.info('FROM CLIENT #{}: {}'.format(idClient, exito))
+    
+    end = time.time()
 
-        #Calculo de tiempo de transferencia
-        logging.info('TRANSFER TIME FOR CLIENT #{}: {}'.format(idClient, end-start))
+    print("TIEMPO TRANSF: " + str(end))
+    #Calculo de tiempo de transferencia
+    logging.info('TRANSFER TIME FOR CLIENT #{}: {}'.format(idClient, end-start))
 
-        #Envio de hash
-        conn.send(hashValue.encode(FORMAT))
-        logging.info('SENT HASH {} TO CLIENT #{}'.format(hashValue, idClient))
+    # Calcular hash para el archivo
+    hashValue = getHashDigest(fName)
 
+    #Envio de hash
+    conn.send(bytes(hashValue, FORMAT))
+    logging.info('SENT HASH {} TO CLIENT #{}'.format(hashValue, idClient))
+    print("FIN CON CLIENT: " + str(idClient))
     conn.close()
 
 #Master client

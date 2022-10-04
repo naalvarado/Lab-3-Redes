@@ -6,12 +6,15 @@ import datetime
 import os
 import tqdm
 import hashlib
+import time
 
 s = socket.socket()
-HOST = "192.168.20.48"
-PORT = 444
+HOST = "192.168.47.129"
+PORT = 5252
 FORMAT = 'utf-8'
 BUFFER_SIZE = 4096
+SEPARATOR = "<SEPARATOR>"
+
 
 logs = os.path.exists("./Logs")
 if not logs:
@@ -25,17 +28,16 @@ logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S", filen
 filesize = 0
 fileName = ""
 
-def getHashDigest(file):
-    BLOCK_SIZE = 65536 # The size of each read from the file
+def getHashDigest(fileName):
+    h = hashlib.sha1()
 
-    file_hash = hashlib.sha256() # Create the hash object, can use something other than `.sha256()` if you wish
+    with open(fileName, 'rb') as file:
+        chunk = 0
+        while chunk != b'':
+            chunk = file.read(1024)
+            h.update(chunk)
     
-    fb = file.read(BLOCK_SIZE) # Read from the file. Take in the amount declared above
-    while len(fb) > 0: # While there is still data being read from the file
-        file_hash.update(fb) # Update the hash
-        fb = file.read(BLOCK_SIZE) # Read the next block from the file
-
-    return (file_hash.hexdigest()) # Get the hexadecimal digest of the hash
+    return h.hexdigest()
 
 def conn(tid):
     print("Comiensa hilo: " + str(tid))
@@ -45,26 +47,43 @@ def conn(tid):
     except socket.error as msg:
         print(msg)
         exit(1)
-    logging.info("Coneccion establecida con: " + str(HOST) + " en puerto: " + str(PORT) + " cliente " + str(tid))
-    client_socket.sendall(bytes(tid))
+    logging.info("Conexion establecida con: " + str(HOST) + " en puerto: " + str(PORT) + " cliente " + str(tid))
+    idClient = bytes(str(tid), FORMAT)
+    client_socket.sendall(idClient)
     print("ID enviado")
-    progress = tqdm.tqdm(range(filesize), f"Receiving {fileName}", unit="B", unit_scale=True, unit_divisor=1024)
-    with open(fileName, "wb") as f:
+
+    received = client_socket.recv(BUFFER_SIZE).decode()
+    fName, fileSizeBytes = received.split(SEPARATOR)
+    fileSizeBytes =int(fileSizeBytes)
+    print(fName)
+    print(fileSizeBytes)
+    progress = tqdm.tqdm(range(fileSizeBytes), f"Receiving {fName}", unit="B", unit_scale=True, unit_divisor=1024)
+
+    logs = os.path.exists("ArchivosRecibidos")
+    if not logs:
+        os.makedirs("ArchivosRecibidos")
+
+    clientFileName = "ArchivosRecibidos/" + "Cliente" + str(tid) + "-Prueba-" + cons +".txt"
+    with open( clientFileName, "wb+") as f:
         while True:
             bytes_read = client_socket.recv(BUFFER_SIZE)
+            print(str(bytes_read.decode(FORMAT)))
+            if str(bytes_read.decode(FORMAT)) == "FIN":
+                break
             if not bytes_read:
                 break
+            
             f.write(bytes_read)
+            
             progress.update(len(bytes_read))
-
-        client_socket.sendall(bytes("ACK", FORMAT))
-        hashDesc = client_socket.recv(BUFFER_SIZE).decode(FORMAT)
-        realHash = getHashDigest(f)
-        if hashDesc == realHash:
-            print("ok")
-        else:
-            print(":(")
-
+        
+    client_socket.sendall(bytes("ACK", FORMAT))
+    hashDesc = client_socket.recv(1024).decode(FORMAT)
+    realHash = getHashDigest(clientFileName)
+    if hashDesc == realHash:
+        logging.info("El hash corresponde para el cliente:" + str(tid))
+    else:
+        logging.info("El hash NO corresponde para el cliente:" + str(tid))
     client_socket.close()
 
 if __name__ == "__main__":
@@ -72,8 +91,8 @@ if __name__ == "__main__":
         s.connect((HOST,PORT))
     except socket.error as msg:
         print(msg)
-    print("ceneccion establecida")
-    logging.info("Coneccion establecida con: " + str(HOST) + " en puerto: " + str(PORT))
+    print("Conexion establecida")
+    logging.info("Conexion establecida con: " + str(HOST) + " en puerto: " + str(PORT))
 
     print("Que archivo quiere descargar?")
     print("1) 100Mb")
@@ -81,7 +100,7 @@ if __name__ == "__main__":
     fileCode = input()
     if fileCode == "1":
         fileName = "100MB.txt"
-        filesize = 100000
+        filesize = 104857600
     elif fileCode == "2":
         fileName = "250MB.txt"
         filesize = 250000
@@ -90,7 +109,7 @@ if __name__ == "__main__":
         exit(1)
     message = bytes(fileName, FORMAT)
     s.sendall(message)
-    print("Numero de conecciones: ")
+    print("Numero de Conexiones: ")
     cons = input()
     message = bytes(cons, FORMAT)
     s.sendall(message)
