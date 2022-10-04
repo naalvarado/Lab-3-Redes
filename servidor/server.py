@@ -1,6 +1,6 @@
 import datetime, logging, socket, sys, threading, os, hashlib, time, tqdm
 
-HOST = '192.168.20.48'
+HOST = '192.168.47.129'
 PORT = 444
 FORMAT = 'utf-8'
 BUFFER_SIZE = 4096
@@ -87,10 +87,14 @@ fileName = conn.recv(1024).decode(FORMAT)
 nClients = int.from_bytes(conn.recv(1024), "big")
 #conn.close()
 
+logs = os.path.exists("./Logs")
+if not logs:
+    os.makedirs("./Logs")
+
 format = "%(asctime)s: %(message)s"
 now = datetime.datetime.now()
 
-logFileName = "{}-{}-{}-{}-{}-{}.log".format(now.year, now.month, now.day, now.hour, now.minute, now.second)
+logFileName = "./Logs/"+ "{}-{}-{}-{}-{}-{}.log".format(now.year, now.month, now.day, now.hour, now.minute, now.second)
 logging.basicConfig(format=format, datefmt="%H:%M:%S", filename=logFileName, level=logging.INFO)
 
 tList = []
