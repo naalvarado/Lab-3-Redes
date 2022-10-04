@@ -5,7 +5,7 @@ signal(SIGPIPE,SIG_DFL)
 import datetime, logging, socket, sys, threading, os, hashlib, time, tqdm
 #"192.168.47.129"
 HOST = '192.168.47.129'
-PORT = 5252
+PORT = 7777
 FORMAT = 'utf-8'
 BUFFER_SIZE = 4096
 SEPARATOR = "<SEPARATOR>"
@@ -54,7 +54,7 @@ def clientthread(conn, fName):
     with open(fName, "rb") as f:
 
         #Envio de archivo
-        print("Empiza el envio")
+        print("Empieza el envio")
         start = time.time()
         while True:
             # read the bytes from the file

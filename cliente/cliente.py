@@ -10,7 +10,7 @@ import time
 
 s = socket.socket()
 HOST = "192.168.47.129"
-PORT = 5252
+PORT = 7777
 FORMAT = 'utf-8'
 BUFFER_SIZE = 4096
 SEPARATOR = "<SEPARATOR>"
@@ -40,7 +40,7 @@ def getHashDigest(fileName):
     return h.hexdigest()
 
 def conn(tid):
-    print("Comiensa hilo: " + str(tid))
+    print("Comienza hilo: " + str(tid))
     client_socket = socket.socket()
     try:
         client_socket.connect((HOST,PORT))
@@ -64,6 +64,8 @@ def conn(tid):
         os.makedirs("ArchivosRecibidos")
 
     clientFileName = "ArchivosRecibidos/" + "Cliente" + str(tid) + "-Prueba-" + cons +".txt"
+
+    start = time.time()
     with open( clientFileName, "wb+") as f:
         while True:
             bytes_read = client_socket.recv(BUFFER_SIZE)
@@ -76,7 +78,9 @@ def conn(tid):
             f.write(bytes_read)
             
             progress.update(len(bytes_read))
-        
+    
+    end = time.time()
+    logging.info('TRANSFER TIME FOR CLIENT #{}: {}'.format(idClient, end-start))
     client_socket.sendall(bytes("ACK", FORMAT))
     hashDesc = client_socket.recv(1024).decode(FORMAT)
     realHash = getHashDigest(clientFileName)
@@ -113,17 +117,10 @@ if __name__ == "__main__":
     cons = input()
     message = bytes(cons, FORMAT)
     s.sendall(message)
-    print("mensage enviado")
+    print("mensaje enviado")
 
     logging.info("Creando " + str(cons) + " clientes para descargar el archivo " + str(fileName))
 
     s.close()
     with concurrent.futures.ThreadPoolExecutor(max_workers=int(cons)) as executor:
         executor.map(conn, range(int(cons)))
-
-
-#s.listen(5) 
-#while True:
-#    c, addr = s.accept() 
-#    c.send (' Grace for connecting ') 
-#    c.close ()

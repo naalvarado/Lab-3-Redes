@@ -1,0 +1,32 @@
+03:59:27: Conexion establecida con: 192.168.47.129 en puerto: 7777
+03:59:30: Creando 10 clientes para descargar el archivo 250MB.txt
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 0
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 1
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 2
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 3
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 5
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 6
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 4
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 9
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 7
+03:59:30: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 8
+04:01:45: TRANSFER TIME FOR CLIENT #b'5': 134.83521389961243
+04:01:46: El hash corresponde para el cliente:5
+04:01:47: TRANSFER TIME FOR CLIENT #b'2': 136.76994442939758
+04:01:48: El hash corresponde para el cliente:2
+04:01:48: TRANSFER TIME FOR CLIENT #b'8': 137.7461714744568
+04:01:49: El hash corresponde para el cliente:8
+04:01:49: TRANSFER TIME FOR CLIENT #b'0': 138.7964150905609
+04:01:49: TRANSFER TIME FOR CLIENT #b'6': 139.1690719127655
+04:01:49: TRANSFER TIME FOR CLIENT #b'4': 139.3411102294922
+04:01:49: TRANSFER TIME FOR CLIENT #b'1': 139.36411809921265
+04:01:50: TRANSFER TIME FOR CLIENT #b'3': 139.77132534980774
+04:01:50: TRANSFER TIME FOR CLIENT #b'9': 139.77132534980774
+04:01:50: El hash corresponde para el cliente:0
+04:01:50: El hash corresponde para el cliente:6
+04:01:51: TRANSFER TIME FOR CLIENT #b'7': 140.88361835479736
+04:01:51: El hash corresponde para el cliente:1
+04:01:52: El hash corresponde para el cliente:4
+04:01:52: El hash corresponde para el cliente:3
+04:01:52: El hash corresponde para el cliente:9
+04:01:52: El hash corresponde para el cliente:7

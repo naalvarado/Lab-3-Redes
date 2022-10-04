@@ -1,0 +1,5 @@
+01:14:16: Conexion establecida con: 192.168.47.129 en puerto: 7777
+01:14:17: Creando 1 clientes para descargar el archivo 100MB.txt
+01:14:17: Conexion establecida con: 192.168.47.129 en puerto: 7777 cliente 0
+01:14:25: TRANSFER TIME FOR CLIENT #b'0': 7.117761611938477
+01:14:25: El hash corresponde para el cliente:0
