@@ -1,7 +1,7 @@
 import datetime, logging, socket, sys, threading, os, hashlib, time, tqdm
-
+#"192.168.47.129"
 HOST = '192.168.47.129'
-PORT = 444
+PORT = 4444
 FORMAT = 'utf-8'
 BUFFER_SIZE = 4096
 
@@ -84,7 +84,7 @@ def clientthread(conn, fName):
 conn, addr = s.accept()
 print ('Connected with ' + addr[0] + ':' + str(addr[1]))
 fileName = conn.recv(1024).decode(FORMAT)
-nClients = int.from_bytes(conn.recv(1024), "big")
+nClients = int(conn.recv(1024).decode(FORMAT))
 #conn.close()
 
 logs = os.path.exists("./Logs")
