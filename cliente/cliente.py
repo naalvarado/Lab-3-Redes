@@ -10,6 +10,7 @@ s = socket.socket()
 HOST = "192.168.20.48"
 PORT = 444
 FORMAT = 'utf-8'
+BUFFER_SIZE = 4096
 
 logs = os.path.exists("./Logs")
 if not logs:
@@ -22,6 +23,18 @@ logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S", filen
 
 filesize = 0
 fileName = ""
+
+def getHashDigest(file):
+    BLOCK_SIZE = 65536 # The size of each read from the file
+
+    file_hash = hashlib.sha256() # Create the hash object, can use something other than `.sha256()` if you wish
+    
+    fb = file.read(BLOCK_SIZE) # Read from the file. Take in the amount declared above
+    while len(fb) > 0: # While there is still data being read from the file
+        file_hash.update(fb) # Update the hash
+        fb = file.read(BLOCK_SIZE) # Read the next block from the file
+
+    return (file_hash.hexdigest()) # Get the hexadecimal digest of the hash
 
 def conn(tid):
     print("Comiensa hilo: " + str(tid))
@@ -36,7 +49,14 @@ def conn(tid):
             f.write(bytes_read)
             progress.update(len(bytes_read))
 
-    s.sendall("ACK")
+        s.sendall(bytes("ACK", FORMAT))
+        hashDesc = s.recv(BUFFER_SIZE).decode(FORMAT)
+        realHash = getHashDigest(f)
+        if hashDesc == realHash:
+            print("ok")
+        else:
+            print(":(")
+
     s.close()
 
 if __name__ == "__main__":
