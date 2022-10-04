@@ -4,6 +4,7 @@ import concurrent.futures
 import logging
 import datetime
 import os
+import tqdm
 
 s = socket.socket()
 HOST = "192.168.20.48"
@@ -19,14 +20,24 @@ now = datetime.datetime.now()
 logfile = "./Logs/" + str(now.year) + "-" + str(now.month) + "-" + str(now.day) + "-" + str(now.minute) + "-" + str(now.second) + ".log"
 logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S", filename=logfile)
 
+filesize = 0
+fileName = ""
+
 def conn(tid):
     print("Comiensa hilo: " + str(tid))
     s.sendall(bytes(tid))
     print("ID enviado")
-    file = s.recv(1024)
-    print(file.decode(FORMAT))
-    print("Mensaje recivido")
+    progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+    with open(fileName, "wb") as f:
+        while True:
+            bytes_read = client_socket.recv(BUFFER_SIZE)
+            if not bytes_read:
+                break
+            f.write(bytes_read)
+            progress.update(len(bytes_read))
+
     s.sendall("ACK")
+    s.close()
 
 if __name__ == "__main__":
     try:
@@ -40,11 +51,12 @@ if __name__ == "__main__":
     print("1) 100Mb")
     print("2) 250Mb")
     fileCode = input()
-    fileName = ""
     if fileCode == "1":
         fileName = "100MB.txt"
+        filesize = 100000
     elif fileCode == "2":
         fileName = "250MB.txt"
+        filesize = 250000
     else:
         print("input no valido")
         exit(1)
